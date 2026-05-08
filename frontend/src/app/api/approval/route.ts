@@ -135,24 +135,30 @@ export async function POST(req: Request) {
           const scalarData: Record<string, any> = {};
 
           for (const section of newProfileData.sections) {
-            if (SCALAR_SECTION_KEYS.has(section.key) && section.data && !Array.isArray(section.data)) {
-              Object.assign(scalarData, sanitizeProfileData(section.data));
+            // Process scalar sections (identity, research, opportunities)
+            if (SCALAR_SECTION_KEYS.has(section.key) && section.data && typeof section.data === 'object' && !Array.isArray(section.data)) {
+              const sanitized = sanitizeProfileData(section.data);
+              Object.assign(scalarData, sanitized);
               continue;
             }
 
+            // Process relation sections (education, experience, etc.)
             const applyRelation = RELATION_APPLIERS[section.key];
             if (applyRelation && Array.isArray(section.data)) {
               await applyRelation(tx, pendingChange.facultyProfileId, section.data);
             }
           }
 
-          await tx.facultyProfile.update({
-            where: { id: pendingChange.facultyProfileId },
-            data: {
-              ...scalarData,
-              isPublic: true,
-            },
-          });
+          // Apply all scalar updates to the main profile
+          if (Object.keys(scalarData).length > 0 || !pendingChange.facultyProfile.isPublic) {
+            await tx.facultyProfile.update({
+              where: { id: pendingChange.facultyProfileId },
+              data: {
+                ...scalarData,
+                isPublic: true,
+              },
+            });
+          }
         } else {
           await tx.facultyProfile.update({
             where: { id: pendingChange.facultyProfileId },
