@@ -80,6 +80,55 @@ function pick(row: Record<string, any>, keys: string[]) {
   return Object.fromEntries(Object.entries(row).filter(([key, value]) => keys.includes(key) && value !== undefined));
 }
 
+const RELATION_REQUIRED_FIELDS: Record<string, string[]> = {
+  education: ['degree', 'institution', 'year'],
+  experience: ['title', 'organization', 'from', 'to'],
+  responsibilities: ['position', 'organization', 'from', 'type'],
+  publications: ['title', 'authors', 'venue', 'year'],
+  projects: ['title', 'fundingAgency', 'amount', 'duration', 'status'],
+  phdsGuided: ['studentName', 'thesisTitle', 'role', 'year'],
+  awards: ['title', 'awardedBy', 'year'],
+  patents: ['title', 'inventors', 'patentNumber', 'year', 'status'],
+  invitedTalks: ['topic', 'organization', 'date'],
+  memberships: ['type', 'organization'],
+  foreignVisits: ['country', 'duration', 'purpose'],
+};
+
+const YEAR_FIELDS = new Set(['education', 'publications', 'phdsGuided', 'awards', 'patents']);
+
+function sanitizeRelationRows(sectionKey: string, rows: unknown[]) {
+  const requiredFields = RELATION_REQUIRED_FIELDS[sectionKey];
+  if (!requiredFields) {
+    throw new Error(`Unsupported section "${sectionKey}".`);
+  }
+
+  return rows.map((row, index) => {
+    if (!row || typeof row !== 'object' || Array.isArray(row)) {
+      throw new Error(`Row ${index + 1} must be an object.`);
+    }
+
+    const record = row as Record<string, any>;
+    const missingFields = requiredFields.filter((field) => {
+      const value = record[field];
+      return value === undefined || value === null || String(value).trim() === '';
+    });
+
+    if (missingFields.length > 0) {
+      throw new Error(`Row ${index + 1} in ${SECTION_LABELS[sectionKey]} is missing: ${missingFields.join(', ')}.`);
+    }
+
+    if (YEAR_FIELDS.has(sectionKey)) {
+      const year = Number(record.year);
+      if (!Number.isInteger(year)) {
+        throw new Error(`Row ${index + 1} in ${SECTION_LABELS[sectionKey]} has an invalid year.`);
+      }
+      return { ...record, year };
+    }
+
+    return record;
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -127,6 +176,12 @@ export async function POST(req: Request) {
         }
         if (!Array.isArray(rows)) {
           return NextResponse.json({ error: 'Section rows must be a JSON array.' }, { status: 400 });
+        }
+
+        try {
+          rows = sanitizeRelationRows(data.sectionKey, rows);
+        } catch (validationError: any) {
+          return NextResponse.json({ error: validationError.message }, { status: 400 });
         }
       }
 
@@ -202,8 +257,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, pendingChange });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+    if (String(error?.message || '').includes('officialEmail')) {
+      return NextResponse.json(
+        { error: 'Database schema is missing FacultyProfile.officialEmail. Run: npm --workspace backend run db:patch:official-profiles' },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
