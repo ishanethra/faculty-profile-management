@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -168,19 +167,6 @@ async function fetchPage(urls: string[]): Promise<string> {
 }
 
 async function main() {
-  const hashedPassword = await bcrypt.hash('password123', 10);
-  const hodByDept: Record<string, string> = {
-    chemistry: 'dr. a. sreekanth',
-    civil: 'dr. s. jayalekshmi',
-    humanities: 'dr. r. murugesan',
-    ice: 'dr. k. srinivasan',
-    maths: 'prof. v. ravichandran',
-    mech: 'dr. s. suresh',
-    meta: 'dr. n. ramesh babu',
-    physics: 'dr. r. nagalakshmi',
-  };
-  const normalizeName = (name: string) => name.toLowerCase().replace(/\s+/g, ' ').trim();
-
   for (const dept of departments) {
     console.log(`Processing ${dept.code}...`);
 
@@ -199,27 +185,26 @@ async function main() {
     const faculties = parseFaculty(html, dept.name);
     console.log(`Found ${faculties.length} faculty candidates for ${dept.code}`);
 
-    for (const [index, f] of faculties.entries()) {
+    for (const f of faculties) {
       const email = f.email || `${slugify(f.name)}.${dept.code}@nitt.edu`;
-      const expectedHod = hodByDept[dept.code];
-      const role = expectedHod
-        ? (normalizeName(f.name) === expectedHod ? 'HOD' : 'FACULTY')
-        : (index === 0 ? 'HOD' : 'FACULTY');
       const deptLabel = `Department of ${dept.name}, NIT Trichy`;
 
-      const user = await prisma.user.upsert({
-        where: { email },
-        update: { role },
-        create: {
-          email,
-          password: hashedPassword,
-          role,
+      const existingProfile = await prisma.facultyProfile.findFirst({
+        where: {
+          OR: [
+            { officialEmail: email },
+            { user: { email } },
+            { departmentId: department.id, name: f.name },
+          ],
         },
       });
 
-      await prisma.facultyProfile.upsert({
-        where: { userId: user.id },
-        update: {
+      if (existingProfile) {
+        await prisma.facultyProfile.update({
+          where: { id: existingProfile.id },
+          data: {
+          departmentId: department.id,
+          officialEmail: email,
           name: f.name,
           designation: f.designation,
           phone: f.phone,
@@ -228,9 +213,12 @@ async function main() {
           researchTags: (f.researchTags || '').slice(0, 190),
           profileCompletion: 80,
           isPublic: true,
-        },
-        create: {
-          userId: user.id,
+          },
+        });
+      } else {
+        await prisma.facultyProfile.create({
+          data: {
+          officialEmail: email,
           departmentId: department.id,
           name: f.name,
           designation: f.designation,
@@ -240,8 +228,9 @@ async function main() {
           researchTags: (f.researchTags || '').slice(0, 190),
           profileCompletion: 80,
           isPublic: true,
-        },
-      });
+          },
+        });
+      }
     }
   }
 

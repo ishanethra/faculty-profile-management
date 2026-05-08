@@ -467,9 +467,9 @@ async function main() {
 
   let updated = 0;
   for (const fp of profiles) {
-    const email = fp.user.email.toLowerCase();
+    const email = (fp.officialEmail || fp.user?.email || '').toLowerCase();
     const n = normalize(fp.name);
-    const url = byEmail.get(email) || byName.get(n);
+    const url = (email ? byEmail.get(email) : undefined) || byName.get(n);
     if (!url) continue;
 
     try {

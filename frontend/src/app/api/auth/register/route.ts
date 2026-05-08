@@ -20,7 +20,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -35,7 +34,6 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user and profile in a transaction
     const user = await prisma.$transaction(async (prisma) => {
       const newUser = await prisma.user.create({
         data: {
@@ -45,18 +43,64 @@ export async function POST(req: Request) {
         },
       });
 
-      // If user is HOD or FACULTY, create FacultyProfile
       if ((safeRole === "FACULTY" || safeRole === "HOD") && departmentId && name) {
-        await prisma.facultyProfile.create({
-          data: {
-            userId: newUser.id,
-            departmentId,
-            name,
-            designation: designation || "Assistant Professor",
-            researchTags: "", // Set to empty string as requested
-            isPublic: false,
+        const existingOfficialProfile = await prisma.facultyProfile.findFirst({
+          where: {
+            officialEmail: email,
+            userId: null,
           },
         });
+
+        if (existingOfficialProfile) {
+          await prisma.facultyProfile.update({
+            where: { id: existingOfficialProfile.id },
+            data: {
+              userId: newUser.id,
+              departmentId,
+              name: existingOfficialProfile.name || name,
+              designation: existingOfficialProfile.designation || designation || "Assistant Professor",
+              isPublic: existingOfficialProfile.isPublic,
+            },
+          });
+        } else {
+          await prisma.facultyProfile.create({
+            data: {
+              userId: newUser.id,
+              officialEmail: email,
+              departmentId,
+              name,
+              designation: designation || "Assistant Professor",
+              researchTags: "",
+              isPublic: false,
+            },
+          });
+        }
+      } else if (safeRole === "FACULTY" || safeRole === "HOD") {
+        const existingOfficialProfile = await prisma.facultyProfile.findFirst({
+          where: {
+            officialEmail: email,
+            userId: null,
+          },
+        });
+
+        if (existingOfficialProfile) {
+          await prisma.facultyProfile.update({
+            where: { id: existingOfficialProfile.id },
+            data: { userId: newUser.id },
+          });
+        } else if (departmentId && name) {
+          await prisma.facultyProfile.create({
+            data: {
+              userId: newUser.id,
+              officialEmail: email,
+              departmentId,
+              name,
+              designation: designation || "Assistant Professor",
+              researchTags: "",
+              isPublic: false,
+            },
+          });
+        }
       }
 
       return newUser;

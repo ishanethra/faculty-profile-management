@@ -34,8 +34,9 @@ model Department {
 
 model FacultyProfile {
   id               String       @id @default(cuid())
-  userId           String       @unique
-  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String?      @unique
+  user             User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  officialEmail    String?      @unique
   
   departmentId     String
   department       Department   @relation(fields: [departmentId], references: [id])

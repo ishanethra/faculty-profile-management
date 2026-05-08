@@ -10,6 +10,7 @@
     "db:seed:other": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed_other_departments.ts",
     "db:seed:all": "npm run db:seed && npm run db:seed:other",
     "db:clear:registered": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' ../scratch/clear_registered_profiles.ts",
+    "db:reset:user": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' ../scratch/reset_user_password.ts",
     "db:prepare:deploy": "npm run db:generate && npm run db:push && npm run db:seed:all"
   },
   "dependencies": {
