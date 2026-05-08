@@ -1,0 +1,21 @@
+{
+  "name": "nitt-portal-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=frontend",
+    "db:generate": "npm run db:generate --workspace=backend",
+    "db:push": "npm run db:push --workspace=backend",
+    "db:migrate": "npm run db:migrate --workspace=backend",
+    "db:seed": "npm run db:seed --workspace=backend",
+    "db:seed:other": "npm run db:seed:other --workspace=backend",
+    "db:seed:all": "npm run db:seed:all --workspace=backend",
+    "db:prepare:deploy": "npm run db:prepare:deploy --workspace=backend",
+    "seed": "npm run db:seed --workspace=backend"
+  }
+}

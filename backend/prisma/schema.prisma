@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums are not natively supported in SQLite, using Strings instead.
+// Role: SUPER_ADMIN, HOD, FACULTY
+// ApprovalStatus: PENDING, APPROVED, REJECTED
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("FACULTY")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  facultyProfile FacultyProfile?
+  auditLogs      AuditLog[]      @relation("UserAuditLogs")
+}
+
+model Department {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  code        String           @unique
+  faculties   FacultyProfile[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model FacultyProfile {
+  id               String       @id @default(cuid())
+  userId           String       @unique
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  departmentId     String
+  department       Department   @relation(fields: [departmentId], references: [id])
+  
+  name             String
+  designation      String
+  office           String?
+  phone            String?
+  profileImage     String?
+  researchTags     String       // Comma separated tags
+  
+  scholarLink      String?
+  linkedinLink     String?
+  orcid            String?
+  cvUrl            String?
+  
+  phdGuidance      Boolean      @default(false)
+  collaboration    Boolean      @default(false)
+  consultancy      Boolean      @default(false)
+  
+  profileCompletion Int         @default(0)
+  isPublic         Boolean      @default(true)
+
+  education        Education[]
+  experience       Experience[]
+  responsibilities Responsibility[]
+  invitedTalks     InvitedTalk[]
+  phdsGuided       PhDGuided[]
+  memberships      Membership[]
+  foreignVisits    ForeignVisit[]
+  
+  publications     Publication[]
+  projects         Project[]
+  patents          Patent[]
+  awards           Award[]
+  activities       ActivityTimeline[]
+  pendingChanges   PendingChange[]
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model Education {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  degree           String         // PhD, MTech, etc.
+  institution      String
+  year             Int
+  details          String?        // CGPA, Subjects, etc.
+  createdAt        DateTime       @default(now())
+}
+
+model Experience {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  title            String         // Lecturer, Assistant Professor
+  organization     String
+  from             String
+  to               String
+  createdAt        DateTime       @default(now())
+}
+
+model Responsibility {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  position         String
+  organization     String         // Internal or External
+  from             String
+  to               String?
+  type             String         // INTERNAL, EXTERNAL
+  createdAt        DateTime       @default(now())
+}
+
+model InvitedTalk {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  topic            String
+  organization     String
+  date             String
+  createdAt        DateTime       @default(now())
+}
+
+model PhDGuided {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  studentName      String
+  thesisTitle      String
+  role             String         // Supervisor, Co-Supervisor
+  year             Int
+  createdAt        DateTime       @default(now())
+}
+
+model Membership {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  type             String         // Life Member, Ordinary Member
+  organization     String
+  membershipNo     String?
+  createdAt        DateTime       @default(now())
+}
+
+model ForeignVisit {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  country          String
+  duration         String
+  purpose          String
+  createdAt        DateTime       @default(now())
+}
+
+model Publication {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  title            String
+  authors          String
+  venue            String
+  year             Int
+  link             String?
+  createdAt        DateTime       @default(now())
+}
+
+model Project {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  title            String
+  fundingAgency    String
+  amount           String
+  duration         String
+  status           String         // Ongoing, Completed
+  createdAt        DateTime       @default(now())
+}
+
+model Patent {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  title            String
+  inventors        String
+  patentNumber     String
+  year             Int
+  status           String
+  createdAt        DateTime       @default(now())
+}
+
+model Award {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  title            String
+  awardedBy        String
+  year             Int
+  createdAt        DateTime       @default(now())
+}
+
+model ActivityTimeline {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  year             Int
+  title            String
+  description      String?
+  createdAt        DateTime       @default(now())
+}
+
+model PendingChange {
+  id               String         @id @default(cuid())
+  facultyProfileId String
+  facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
+  changeData       String         // JSON string of the proposed changes
+  status           String         @default("PENDING")
+  submittedAt      DateTime       @default(now())
+  reviewedAt       DateTime?
+  reviewedById     String?
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserAuditLogs", fields: [userId], references: [id])
+  action      String
+  details     String   
+  createdAt   DateTime @default(now())
+}

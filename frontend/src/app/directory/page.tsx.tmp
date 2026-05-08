@@ -1,0 +1,37 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+
+interface Faculty {
+  id: string;
+  name: string;
+  designation: string;
+  researchTags: string;
+  profileImage: string | null;
+}
+
+interface Department {
+  id: string;
+  name: string;
+  faculties: Faculty[];
+}
+
+export default function DirectoryPage({ 
+  searchParams 
+}: { 
+  searchParams: { q?: string; dept?: string; des?: string } 
+}) {
+  const query = searchParams.q || "";
+  const deptFilter = searchParams.dept || "";
+  const desFilter = searchParams.des || "";
+
+  // Mock data for initial UI (in reality, this comes from the server)
+  // I'll assume we pass it from a parent RSC or fetch it, but for this client component
+  // I will just implement the search/filter logic on the passed props if I had them.
+  // SINCE THIS IS A CLIENT COMPONENT FOR SEARCH UI, IT SHOULD PROBABLY BE AN RSC OR USE FETCH.
+  
+  // Actually, let's keep it simple. I'll make it a Server Component for SEO and speed.
+  // I'll rewrite this as a Server Component in the next step.
+  return null; // Placeholder for rewrite
+}

@@ -1,0 +1,23 @@
+{
+  "name": "nitt-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts",
+    "db:seed:other": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed_other_departments.ts",
+    "db:seed:all": "npm run db:seed && npm run db:seed:other",
+    "db:prepare:deploy": "npm run db:generate && npm run db:push && npm run db:seed:all"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.14.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.14.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5",
+    "@types/node": "^20"
+  }
+}
