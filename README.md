@@ -1,6 +1,4 @@
-# NIT Trichy Faculty Portal (Monorepo)
-
-This project has been restructured for smooth deployment and evaluation.
+# NIT Trichy Faculty Portal 
 
 ## Structure
 - **frontend/**: Next.js 14 Web Application.
