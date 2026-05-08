@@ -16,6 +16,8 @@ interface ApprovalCardProps {
 
 export default function ApprovalCard({ change }: ApprovalCardProps) {
   const [loading, setLoading] = useState(false);
+  const [showRejectReason, setShowRejectReason] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
   const router = useRouter();
   let data: any = {};
   try {
@@ -36,7 +38,11 @@ export default function ApprovalCard({ change }: ApprovalCardProps) {
       const res = await fetch("/api/approval", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pendingChangeId: change.id, status }),
+        body: JSON.stringify({ 
+          pendingChangeId: change.id, 
+          status,
+          rejectionReason: status === "REJECTED" ? rejectionReason : undefined
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to process approval");
@@ -71,14 +77,35 @@ export default function ApprovalCard({ change }: ApprovalCardProps) {
             Approve Request
           </button>
           <button
-            onClick={() => handleAction("REJECTED")}
+            onClick={() => {
+              if (!showRejectReason) {
+                setShowRejectReason(true);
+              } else {
+                handleAction("REJECTED");
+              }
+            }}
             disabled={loading}
             className="px-6 py-2.5 bg-white/5 hover:bg-red-500/10 text-red-400 border border-white/10 hover:border-red-500/30 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all active:scale-95 disabled:opacity-50"
           >
-            Reject
+            {showRejectReason ? "Confirm Rejection" : "Reject"}
           </button>
         </div>
       </div>
+
+      {showRejectReason && (
+        <div className="mb-8 p-6 bg-red-500/5 border border-red-500/20 rounded-[2rem] space-y-4 animate-in fade-in slide-in-from-top-4">
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] font-black text-red-400 uppercase tracking-widest">Reason for Rejection</label>
+            <button onClick={() => setShowRejectReason(false)} className="text-[10px] font-black text-slate-500 hover:text-white uppercase tracking-widest">Cancel</button>
+          </div>
+          <textarea
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Please explain why this request is being rejected..."
+            className="w-full bg-slate-950/50 border border-white/10 rounded-2xl px-5 py-4 text-white text-sm font-medium focus:outline-none focus:border-red-500/50 transition-all h-24 resize-none"
+          />
+        </div>
+      )}
 
       <div className="space-y-4">
         <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Section Requests</p>

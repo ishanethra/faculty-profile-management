@@ -161,7 +161,7 @@ export default async function FacultyDashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex flex-col items-end gap-3">
                     <span className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-2.5 ${
                       change.status === 'PENDING' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' :
                       change.status === 'APPROVED' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
@@ -174,6 +174,12 @@ export default async function FacultyDashboard() {
                       }`} />
                       {change.status === 'PENDING' ? 'Awaiting Approval' : change.status}
                     </span>
+                    
+                    {(change as any).rejectionReason && (
+                      <p className="text-[10px] text-red-400 font-bold max-w-[200px] text-right">
+                        Reason: {(change as any).rejectionReason}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}

@@ -199,6 +199,28 @@ export async function POST(req: Request) {
       });
     }
 
+    // Collect Relation Data
+    for (const [key, label] of Object.entries(SECTION_LABELS)) {
+      if (['identity', 'research', 'opportunities'].includes(key)) continue;
+      
+      const relationData = data[key];
+      if (Array.isArray(relationData)) {
+        try {
+          const sanitizedRows = sanitizeRelationRows(key, relationData);
+          if (sanitizedRows.length > 0) {
+            sections.push({
+              key,
+              label,
+              data: sanitizedRows,
+              details: `Updated ${sanitizedRows.length} ${label} entries.`
+            });
+          }
+        } catch (e: any) {
+          return NextResponse.json({ error: e.message }, { status: 400 });
+        }
+      }
+    }
+
     if (sections.length === 0) {
       return NextResponse.json({ error: 'No profile changes were submitted.' }, { status: 400 });
     }
@@ -231,6 +253,17 @@ export async function POST(req: Request) {
             ...scalarData,
             isPublic: true,
           },
+        });
+
+        // Still create an APPROVED record for history
+        await tx.pendingChange.create({
+          data: {
+            facultyProfileId: profile.id,
+            changeData: JSON.stringify(changeRequest),
+            status: 'APPROVED',
+            reviewedAt: new Date(),
+            reviewedById: session.user.id
+          }
         });
       });
 

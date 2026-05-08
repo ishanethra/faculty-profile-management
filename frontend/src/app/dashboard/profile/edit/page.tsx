@@ -27,6 +27,15 @@ export default function ProfileEditPage() {
     phdGuidance: false,
     collaboration: false,
     consultancy: false,
+    education: [] as any[],
+    experience: [] as any[],
+    publications: [] as any[],
+    projects: [] as any[],
+    phdsGuided: [] as any[],
+    awards: [] as any[],
+    invitedTalks: [] as any[],
+    memberships: [] as any[],
+    foreignVisits: [] as any[],
   });
 
 
@@ -57,6 +66,15 @@ export default function ProfileEditPage() {
         phdGuidance: data.phdGuidance || false,
         collaboration: data.collaboration || false,
         consultancy: data.consultancy || false,
+        education: data.education || [],
+        experience: data.experience || [],
+        publications: data.publications || [],
+        projects: data.projects || [],
+        phdsGuided: data.phdsGuided || [],
+        awards: data.awards || [],
+        invitedTalks: data.invitedTalks || [],
+        memberships: data.memberships || [],
+        foreignVisits: data.foreignVisits || [],
       });
     } catch (err: any) {
       setError(err.message);
@@ -70,6 +88,28 @@ export default function ProfileEditPage() {
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+    }));
+  };
+
+  const handleArrayChange = (section: string, index: number, field: string, value: any) => {
+    setFormData(prev => {
+      const newArray = [...(prev as any)[section]];
+      newArray[index] = { ...newArray[index], [field]: value };
+      return { ...prev, [section]: newArray };
+    });
+  };
+
+  const addArrayRow = (section: string, defaultRow: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: [...(prev as any)[section], defaultRow]
+    }));
+  };
+
+  const removeArrayRow = (section: string, index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      [section]: (prev as any)[section].filter((_: any, i: number) => i !== index)
     }));
   };
 
@@ -293,6 +333,257 @@ export default function ProfileEditPage() {
                       className="hidden"
                     />
                   </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 04: Academic Qualifications */}
+            <div className="space-y-8 pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-400 font-black text-sm border border-orange-500/20">04</div>
+                  <h2 className="text-xl font-black text-white">Academic Qualifications</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => addArrayRow('education', { degree: '', institution: '', year: new Date().getFullYear(), details: '' })}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all"
+                >
+                  + Add Degree
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {formData.education.map((edu, index) => (
+                  <div key={index} className="p-6 bg-slate-950/50 border border-white/5 rounded-3xl relative group">
+                    <button
+                      type="button"
+                      onClick={() => removeArrayRow('education', index)}
+                      className="absolute top-4 right-4 p-2 text-slate-600 hover:text-red-400 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Degree</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. PhD in CS"
+                          value={edu.degree}
+                          onChange={(e) => handleArrayChange('education', index, 'degree', e.target.value)}
+                          className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Institution</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. NIT Trichy"
+                          value={edu.institution}
+                          onChange={(e) => handleArrayChange('education', index, 'institution', e.target.value)}
+                          className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Year</label>
+                        <input
+                          type="number"
+                          value={edu.year}
+                          onChange={(e) => handleArrayChange('education', index, 'year', e.target.value)}
+                          className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 05: Publications */}
+            <div className="space-y-8 pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center text-pink-400 font-black text-sm border border-pink-500/20">05</div>
+                  <h2 className="text-xl font-black text-white">Publications</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => addArrayRow('publications', { title: '', authors: '', venue: '', year: new Date().getFullYear(), link: '' })}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all"
+                >
+                  + Add Publication
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {formData.publications.map((pub, index) => (
+                  <div key={index} className="p-6 bg-slate-950/50 border border-white/5 rounded-3xl relative">
+                    <button
+                      type="button"
+                      onClick={() => removeArrayRow('publications', index)}
+                      className="absolute top-4 right-4 p-2 text-slate-600 hover:text-red-400 transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Title</label>
+                        <input
+                          type="text"
+                          value={pub.title}
+                          onChange={(e) => handleArrayChange('publications', index, 'title', e.target.value)}
+                          className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Venue / Journal</label>
+                          <input
+                            type="text"
+                            value={pub.venue}
+                            onChange={(e) => handleArrayChange('publications', index, 'venue', e.target.value)}
+                            className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Year</label>
+                          <input
+                            type="number"
+                            value={pub.year}
+                            onChange={(e) => handleArrayChange('publications', index, 'year', e.target.value)}
+                            className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 06: Experience */}
+            <div className="space-y-8 pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-black text-sm border border-cyan-500/20">06</div>
+                  <h2 className="text-xl font-black text-white">Employment Profile</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => addArrayRow('experience', { title: '', organization: '', from: '', to: '' })}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all"
+                >
+                  + Add Experience
+                </button>
+              </div>
+              <div className="space-y-4">
+                {formData.experience.map((exp, index) => (
+                  <div key={index} className="p-6 bg-slate-950/50 border border-white/5 rounded-3xl relative">
+                    <button type="button" onClick={() => removeArrayRow('experience', index)} className="absolute top-4 right-4 p-2 text-slate-600 hover:text-red-400 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Designation</label><input type="text" value={exp.title} onChange={(e) => handleArrayChange('experience', index, 'title', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Organization</label><input type="text" value={exp.organization} onChange={(e) => handleArrayChange('experience', index, 'organization', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">From</label><input type="text" value={exp.from} onChange={(e) => handleArrayChange('experience', index, 'from', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">To</label><input type="text" value={exp.to} onChange={(e) => handleArrayChange('experience', index, 'to', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 07: Projects */}
+            <div className="space-y-8 pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 font-black text-sm border border-indigo-500/20">07</div>
+                  <h2 className="text-xl font-black text-white">Sponsored Projects</h2>
+                </div>
+                <button type="button" onClick={() => addArrayRow('projects', { title: '', fundingAgency: '', amount: '', duration: '', status: 'ONGOING' })} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all">+ Add Project</button>
+              </div>
+              <div className="space-y-4">
+                {formData.projects.map((proj, index) => (
+                  <div key={index} className="p-6 bg-slate-950/50 border border-white/5 rounded-3xl relative">
+                    <button type="button" onClick={() => removeArrayRow('projects', index)} className="absolute top-4 right-4 p-2 text-slate-600 hover:text-red-400 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <div className="space-y-4">
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Project Title</label><input type="text" value={proj.title} onChange={(e) => handleArrayChange('projects', index, 'title', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Funding Agency</label><input type="text" value={proj.fundingAgency} onChange={(e) => handleArrayChange('projects', index, 'fundingAgency', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Status</label><select value={proj.status} onChange={(e) => handleArrayChange('projects', index, 'status', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"><option value="ONGOING">Ongoing</option><option value="COMPLETED">Completed</option></select></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 08: PhD Scholars */}
+            <div className="space-y-8 pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 font-black text-sm border border-teal-500/20">08</div>
+                  <h2 className="text-xl font-black text-white">PhD Scholars Guided</h2>
+                </div>
+                <button type="button" onClick={() => addArrayRow('phdsGuided', { studentName: '', thesisTitle: '', role: 'Supervisor', year: new Date().getFullYear() })} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all">+ Add Scholar</button>
+              </div>
+              <div className="space-y-4">
+                {formData.phdsGuided.map((phd, index) => (
+                  <div key={index} className="p-6 bg-slate-950/50 border border-white/5 rounded-3xl relative">
+                    <button type="button" onClick={() => removeArrayRow('phdsGuided', index)} className="absolute top-4 right-4 p-2 text-slate-600 hover:text-red-400 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Student Name</label><input type="text" value={phd.studentName} onChange={(e) => handleArrayChange('phdsGuided', index, 'studentName', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Thesis Title</label><input type="text" value={phd.thesisTitle} onChange={(e) => handleArrayChange('phdsGuided', index, 'thesisTitle', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Role</label><select value={phd.role} onChange={(e) => handleArrayChange('phdsGuided', index, 'role', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"><option value="Supervisor">Supervisor</option><option value="Co-Supervisor">Co-Supervisor</option></select></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Year of Completion</label><input type="number" value={phd.year} onChange={(e) => handleArrayChange('phdsGuided', index, 'year', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 09: Awards */}
+            <div className="space-y-8 pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center text-yellow-500 font-black text-sm border border-yellow-500/20">09</div>
+                  <h2 className="text-xl font-black text-white">Awards & Honours</h2>
+                </div>
+                <button type="button" onClick={() => addArrayRow('awards', { title: '', awardedBy: '', year: new Date().getFullYear() })} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all">+ Add Award</button>
+              </div>
+              <div className="space-y-4">
+                {formData.awards.map((award, index) => (
+                  <div key={index} className="p-6 bg-slate-950/50 border border-white/5 rounded-3xl relative">
+                    <button type="button" onClick={() => removeArrayRow('awards', index)} className="absolute top-4 right-4 p-2 text-slate-600 hover:text-red-400 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                      <div className="sm:col-span-2 space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Award Title</label><input type="text" value={award.title} onChange={(e) => handleArrayChange('awards', index, 'title', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Year</label><input type="number" value={award.year} onChange={(e) => handleArrayChange('awards', index, 'year', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      <div className="sm:col-span-3 space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Awarded By</label><input type="text" value={award.awardedBy} onChange={(e) => handleArrayChange('awards', index, 'awardedBy', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Section 10: Invited Talks */}
+            <div className="space-y-8 pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-400 font-black text-sm border border-red-500/20">10</div>
+                  <h2 className="text-xl font-black text-white">Invited Talks</h2>
+                </div>
+                <button type="button" onClick={() => addArrayRow('invitedTalks', { topic: '', organization: '', date: '' })} className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/10 transition-all">+ Add Talk</button>
+              </div>
+              <div className="space-y-4">
+                {formData.invitedTalks.map((talk, index) => (
+                  <div key={index} className="p-6 bg-slate-950/50 border border-white/5 rounded-3xl relative">
+                    <button type="button" onClick={() => removeArrayRow('invitedTalks', index)} className="absolute top-4 right-4 p-2 text-slate-600 hover:text-red-400 transition-colors"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                    <div className="space-y-4">
+                      <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Topic</label><input type="text" value={talk.topic} onChange={(e) => handleArrayChange('invitedTalks', index, 'topic', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Organization</label><input type="text" value={talk.organization} onChange={(e) => handleArrayChange('invitedTalks', index, 'organization', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Date</label><input type="text" placeholder="e.g. Oct 2023" value={talk.date} onChange={(e) => handleArrayChange('invitedTalks', index, 'date', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

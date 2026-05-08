@@ -216,6 +216,7 @@ model PendingChange {
   facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
   changeData       String         @db.LongText // JSON string of the proposed changes
   status           String         @default("PENDING")
+  rejectionReason  String?        @db.Text
   submittedAt      DateTime       @default(now())
   reviewedAt       DateTime?
   reviewedById     String?

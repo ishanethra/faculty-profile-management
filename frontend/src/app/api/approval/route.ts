@@ -84,7 +84,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { pendingChangeId, status } = await req.json();
+    const { pendingChangeId, status, rejectionReason } = await req.json();
 
     if (!['APPROVED', 'REJECTED'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
@@ -120,6 +120,7 @@ export async function POST(req: Request) {
       where: { id: pendingChangeId },
       data: {
         status,
+        rejectionReason: status === 'REJECTED' ? rejectionReason : null,
         reviewedAt: new Date(),
         reviewedById: session.user.id
       }
