@@ -36,6 +36,8 @@ export default function ProfileEditPage() {
     invitedTalks: [] as any[],
     memberships: [] as any[],
     foreignVisits: [] as any[],
+    responsibilities: [] as any[],
+    patents: [] as any[],
   });
 
 
@@ -75,6 +77,8 @@ export default function ProfileEditPage() {
         invitedTalks: data.invitedTalks || [],
         memberships: data.memberships || [],
         foreignVisits: data.foreignVisits || [],
+        responsibilities: data.responsibilities || [],
+        patents: data.patents || [],
       });
     } catch (err: any) {
       setError(err.message);
@@ -507,8 +511,27 @@ export default function ProfileEditPage() {
                     <div className="space-y-4">
                       <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Project Title</label><input type="text" value={proj.title} onChange={(e) => handleArrayChange('projects', index, 'title', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Funding Agency</label><input type="text" value={proj.fundingAgency} onChange={(e) => handleArrayChange('projects', index, 'fundingAgency', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/></div>
-                        <div className="space-y-2"><label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Status</label><select value={proj.status} onChange={(e) => handleArrayChange('projects', index, 'status', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"><option value="ONGOING">Ongoing</option><option value="COMPLETED">Completed</option></select></div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Funding Agency</label>
+                          <input type="text" value={proj.fundingAgency} onChange={(e) => handleArrayChange('projects', index, 'fundingAgency', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Project Amount (₹)</label>
+                          <input type="text" value={proj.amount} onChange={(e) => handleArrayChange('projects', index, 'amount', e.target.value)} placeholder="e.g. 50 Lakhs" className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Duration</label>
+                          <input type="text" value={proj.duration} onChange={(e) => handleArrayChange('projects', index, 'duration', e.target.value)} placeholder="e.g. 3 Years" className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all"/>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Status</label>
+                          <select value={proj.status} onChange={(e) => handleArrayChange('projects', index, 'status', e.target.value)} className="w-full bg-slate-900/50 border border-white/5 rounded-xl px-4 py-3 text-white text-sm font-bold focus:outline-none focus:border-blue-500 transition-all">
+                            <option value="ONGOING">Ongoing</option>
+                            <option value="COMPLETED">Completed</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
