@@ -27,25 +27,8 @@ export default function ProfileEditPage() {
     phdGuidance: false,
     collaboration: false,
     consultancy: false,
-    sectionKey: "",
-    sectionDetails: "",
-    sectionRowsJson: "",
   });
 
-  const sectionOptions = [
-    { value: "", label: "Select Section" },
-    { value: "education", label: "Academic Qualifications" },
-    { value: "experience", label: "Employment Profile" },
-    { value: "responsibilities", label: "Administrative Responsibilities" },
-    { value: "publications", label: "Publications" },
-    { value: "projects", label: "Sponsored Projects" },
-    { value: "phdsGuided", label: "PhD Scholars" },
-    { value: "awards", label: "Awards & Honours" },
-    { value: "patents", label: "Patents" },
-    { value: "invitedTalks", label: "Invited Talks" },
-    { value: "memberships", label: "Professional Memberships" },
-    { value: "foreignVisits", label: "Academic Foreign Visits" },
-  ];
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -74,9 +57,6 @@ export default function ProfileEditPage() {
         phdGuidance: data.phdGuidance || false,
         collaboration: data.collaboration || false,
         consultancy: data.consultancy || false,
-        sectionKey: "",
-        sectionDetails: "",
-        sectionRowsJson: "",
       });
     } catch (err: any) {
       setError(err.message);
@@ -101,11 +81,6 @@ export default function ProfileEditPage() {
     setAppliedDirectly(false);
 
     try {
-      if (formData.sectionRowsJson.trim()) {
-        const parsedRows = JSON.parse(formData.sectionRowsJson);
-        if (!Array.isArray(parsedRows)) throw new Error("Section rows must be a JSON array.");
-      }
-
       const res = await fetch("/api/profile/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -319,55 +294,6 @@ export default function ProfileEditPage() {
                     />
                   </label>
                 ))}
-              </div>
-            </div>
-
-            <div className="space-y-8 pt-4">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400 font-black text-sm border border-amber-500/20">04</div>
-                <h2 className="text-xl font-black text-white">Section Update Request</h2>
-              </div>
-
-              <div className="grid grid-cols-1 gap-8">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Profile Section</label>
-                  <select
-                    name="sectionKey"
-                    value={formData.sectionKey}
-                    onChange={handleChange}
-                    className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 transition-all"
-                  >
-                    {sectionOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Detailed Section Request</label>
-                  <textarea
-                    name="sectionDetails"
-                    rows={4}
-                    placeholder="Describe the exact change requested for this section."
-                    value={formData.sectionDetails}
-                    onChange={handleChange}
-                    className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 transition-all resize-none placeholder:text-slate-700"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Structured Rows JSON</label>
-                  <textarea
-                    name="sectionRowsJson"
-                    rows={7}
-                    placeholder='Example: [{"degree":"PhD","institution":"NIT Trichy","year":2024,"details":"Computer Science"}]'
-                    value={formData.sectionRowsJson}
-                    onChange={handleChange}
-                    className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white font-mono text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 transition-all resize-y placeholder:text-slate-700"
-                  />
-                </div>
               </div>
             </div>
 

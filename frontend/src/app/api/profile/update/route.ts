@@ -29,6 +29,18 @@ const changedFields = (current: Record<string, any>, next: Record<string, any>, 
       .map((key) => [key, next[key]])
   );
 
+const changedFieldDetails = (current: Record<string, any>, next: Record<string, any>, keys: string[]) =>
+  keys
+    .filter((key) => next[key] !== undefined && current[key] !== next[key])
+    .map((key) => ({
+      field: key,
+      from: current[key] ?? '',
+      to: next[key] ?? '',
+    }));
+
+const formatFieldChange = (change: { field: string; from: any; to: any }) =>
+  `${change.field.replace(/([A-Z])/g, ' $1')}: "${String(change.from)}" -> "${String(change.to)}"`;
+
 const RELATION_APPLIERS: Record<string, (tx: any, facultyProfileId: string, rows: any[]) => Promise<void>> = {
   education: async (tx, facultyProfileId, rows) => {
     await tx.education.deleteMany({ where: { facultyProfileId } });
@@ -149,47 +161,41 @@ export async function POST(req: Request) {
     }
 
     const profile = user.facultyProfile;
-    const sections: Array<{ key: string; label: string; details?: string; data?: any }> = [];
+    const sections: Array<{ key: string; label: string; details?: string; data?: any; changes?: Array<{ field: string; from: any; to: any }> }> = [];
 
     const identityData = changedFields(profile, data, ['name', 'designation', 'office', 'phone']);
     if (Object.keys(identityData).length > 0) {
-      sections.push({ key: 'identity', label: SECTION_LABELS.identity, data: identityData });
+      const changes = changedFieldDetails(profile, data, ['name', 'designation', 'office', 'phone']);
+      sections.push({
+        key: 'identity',
+        label: SECTION_LABELS.identity,
+        data: identityData,
+        changes,
+        details: changes.map(formatFieldChange).join('\n'),
+      });
     }
 
     const researchData = changedFields(profile, data, ['researchTags', 'scholarLink', 'linkedinLink', 'orcid', 'cvUrl']);
     if (Object.keys(researchData).length > 0) {
-      sections.push({ key: 'research', label: SECTION_LABELS.research, data: researchData });
+      const changes = changedFieldDetails(profile, data, ['researchTags', 'scholarLink', 'linkedinLink', 'orcid', 'cvUrl']);
+      sections.push({
+        key: 'research',
+        label: SECTION_LABELS.research,
+        data: researchData,
+        changes,
+        details: changes.map(formatFieldChange).join('\n'),
+      });
     }
 
     const opportunitiesData = changedFields(profile, data, ['phdGuidance', 'collaboration', 'consultancy']);
     if (Object.keys(opportunitiesData).length > 0) {
-      sections.push({ key: 'opportunities', label: SECTION_LABELS.opportunities, data: opportunitiesData });
-    }
-
-    if (data.sectionKey && data.sectionDetails) {
-      let rows: unknown = undefined;
-      if (data.sectionRowsJson) {
-        try {
-          rows = JSON.parse(data.sectionRowsJson);
-        } catch {
-          return NextResponse.json({ error: 'Section rows must be valid JSON.' }, { status: 400 });
-        }
-        if (!Array.isArray(rows)) {
-          return NextResponse.json({ error: 'Section rows must be a JSON array.' }, { status: 400 });
-        }
-
-        try {
-          rows = sanitizeRelationRows(data.sectionKey, rows);
-        } catch (validationError: any) {
-          return NextResponse.json({ error: validationError.message }, { status: 400 });
-        }
-      }
-
+      const changes = changedFieldDetails(profile, data, ['phdGuidance', 'collaboration', 'consultancy']);
       sections.push({
-        key: data.sectionKey,
-        label: SECTION_LABELS[data.sectionKey] || data.sectionKey,
-        details: data.sectionDetails,
-        ...(rows ? { data: rows } : {}),
+        key: 'opportunities',
+        label: SECTION_LABELS.opportunities,
+        data: opportunitiesData,
+        changes,
+        details: changes.map(formatFieldChange).join('\n'),
       });
     }
 
@@ -259,6 +265,12 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error(error);
+    if (error?.code === 'P1001' || String(error?.message || '').includes("Can't reach database server")) {
+      return NextResponse.json(
+        { error: 'Database is not running. Start MySQL, then retry the profile update.' },
+        { status: 503 }
+      );
+    }
     if (String(error?.message || '').includes('officialEmail')) {
       return NextResponse.json(
         { error: 'Database schema is missing FacultyProfile.officialEmail. Run: npm --workspace backend run db:patch:official-profiles' },

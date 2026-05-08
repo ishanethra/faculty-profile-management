@@ -94,7 +94,25 @@ export default function ApprovalCard({ change }: ApprovalCardProps) {
                 <p className="text-sm text-slate-300 font-medium leading-relaxed whitespace-pre-wrap">{section.details}</p>
               )}
 
-              {Array.isArray(section.data) ? (
+              {Array.isArray(section.changes) && section.changes.length > 0 ? (
+                <div className="grid grid-cols-1 gap-3">
+                  {section.changes.map((change: any, changeIndex: number) => (
+                    <div key={`${change.field}-${changeIndex}`} className="bg-slate-900/70 p-4 rounded-2xl border border-white/5">
+                      <p className="text-[9px] text-slate-600 font-black uppercase tracking-wider mb-2">{String(change.field).replace(/([A-Z])/g, ' $1')}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-[9px] text-slate-500 font-black uppercase tracking-wider">Current</p>
+                          <p className="text-slate-400 font-bold break-words">{String(change.from || 'Empty')}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-blue-400 font-black uppercase tracking-wider">Requested</p>
+                          <p className="text-slate-100 font-bold break-words">{String(change.to || 'Empty')}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : Array.isArray(section.data) ? (
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[560px] text-left">
                     <tbody className="divide-y divide-white/5">
