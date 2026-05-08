@@ -53,3 +53,4 @@ The profile page has been updated to support all institutional sections:
 - Invited Talks
 - Professional Memberships
 - Patents
+# faculty-profile-management
