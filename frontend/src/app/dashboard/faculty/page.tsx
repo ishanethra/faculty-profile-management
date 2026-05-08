@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import SignOutButton from '@/components/SignOutButton';
 
 
 
@@ -26,7 +27,7 @@ export default async function FacultyDashboard() {
         </div>
         <h2 className="text-2xl font-black mb-2">Profile Not Initialized</h2>
         <p className="text-slate-400 font-medium">Your faculty profile record could not be located. Please contact the Registrar&apos;s office.</p>
-        <Link href="/api/auth/signout" className="mt-8 inline-block px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl shadow-blue-900/40">Secure Sign Out</Link>
+        <SignOutButton className="mt-8 inline-block px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl shadow-blue-900/40">Secure Sign Out</SignOutButton>
       </div>
     </div>
   );

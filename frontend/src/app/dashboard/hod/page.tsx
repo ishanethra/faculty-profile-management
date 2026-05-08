@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import ApprovalCard from '@/components/ApprovalCard';
+import SignOutButton from '@/components/SignOutButton';
 
 
 
@@ -21,7 +22,7 @@ export default async function HODDashboard() {
       facultyProfile: {
         include: {
           department: true,
-          pendingChanges: { orderBy: { submittedAt: 'desc' }, take: 1 }
+          pendingChanges: { where: { status: 'PENDING' }, orderBy: { submittedAt: 'desc' }, take: 1 }
         }
       }
     }
@@ -36,7 +37,7 @@ export default async function HODDashboard() {
            </div>
            <h2 className="text-2xl font-black mb-2">Administrative Hold</h2>
            <p className="text-slate-400 font-medium max-w-sm mx-auto">You are not currently assigned as Head of Department for any registered academic unit. Please contact the Office of Dean (Faculty Welfare).</p>
-           <Link href="/api/auth/signout" className="mt-8 inline-block px-8 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl shadow-red-900/40">Secure Sign Out</Link>
+           <SignOutButton className="mt-8 inline-block px-8 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl font-black uppercase tracking-widest text-[10px] transition-all shadow-xl shadow-red-900/40">Secure Sign Out</SignOutButton>
         </div>
       </div>
     );
@@ -45,14 +46,11 @@ export default async function HODDashboard() {
   const profile = hodUser.facultyProfile;
   const department = profile.department;
 
-  // Get all pending changes for faculties in this department (excluding the HOD if we want, but let's show all)
+  // Include the HOD's own requests so the department head profile can be updated too.
   const pendingChanges = await prisma.pendingChange.findMany({
     where: {
       facultyProfile: { departmentId: department.id },
       status: 'PENDING',
-      NOT: {
-        facultyProfileId: profile.id // Optional: HODs might not approve their own? But let's follow user's "flexible" request
-      }
     },
     include: { facultyProfile: true },
     orderBy: { submittedAt: 'desc' }

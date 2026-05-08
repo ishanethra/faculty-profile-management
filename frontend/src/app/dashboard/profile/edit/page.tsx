@@ -12,6 +12,7 @@ export default function ProfileEditPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [appliedDirectly, setAppliedDirectly] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -97,6 +98,7 @@ export default function ProfileEditPage() {
     setSubmitting(true);
     setError("");
     setSuccess(false);
+    setAppliedDirectly(false);
 
     try {
       if (formData.sectionRowsJson.trim()) {
@@ -113,6 +115,7 @@ export default function ProfileEditPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Update failed");
 
+      setAppliedDirectly(Boolean(data.appliedDirectly));
       setSuccess(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       // Redirect back to dashboard after a delay
@@ -159,7 +162,11 @@ export default function ProfileEditPage() {
         <div className="bg-slate-900/40 backdrop-blur-xl border border-white/5 rounded-[3rem] shadow-2xl overflow-hidden">
           <div className="bg-[#002147] p-10 sm:p-12 text-center border-b border-white/5">
             <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tighter">Edit Faculty Profile</h1>
-            <p className="text-blue-200/60 mt-3 font-medium">Update your academic and professional information. Changes require departmental approval.</p>
+            <p className="text-blue-200/60 mt-3 font-medium">
+              {session?.user?.role === 'HOD'
+                ? 'Update your academic and professional information. HOD updates are published immediately.'
+                : 'Update your academic and professional information. Changes require departmental approval.'}
+            </p>
           </div>
 
           {error && (
@@ -172,7 +179,7 @@ export default function ProfileEditPage() {
           {success && (
             <div className="m-8 p-6 bg-green-500/10 border border-green-500/20 text-green-400 rounded-2xl flex items-center gap-4 text-sm font-bold animate-pulse">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path></svg>
-              Profile update request submitted successfully! Redirecting...
+              {appliedDirectly ? 'Profile updated successfully and published immediately.' : 'Profile update request submitted successfully! Redirecting...'}
             </div>
           )}
 

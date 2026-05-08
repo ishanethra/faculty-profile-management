@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
+import SignOutButton from '@/components/SignOutButton';
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
@@ -30,9 +30,9 @@ export default async function AdminDashboard() {
             </h1>
             <p className="text-slate-400 mt-1">Manage platform configuration and overview</p>
           </div>
-          <Link href="/api/auth/signout" className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 rounded-xl font-semibold transition-all">
+          <SignOutButton className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 border border-red-500/20 rounded-xl font-semibold transition-all">
             Sign Out
-          </Link>
+          </SignOutButton>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

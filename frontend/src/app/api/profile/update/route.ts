@@ -29,6 +29,57 @@ const changedFields = (current: Record<string, any>, next: Record<string, any>, 
       .map((key) => [key, next[key]])
   );
 
+const RELATION_APPLIERS: Record<string, (tx: any, facultyProfileId: string, rows: any[]) => Promise<void>> = {
+  education: async (tx, facultyProfileId, rows) => {
+    await tx.education.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.education.createMany({ data: rows.map((row) => ({ ...pick(row, ['degree', 'institution', 'year', 'details']), facultyProfileId })) });
+  },
+  experience: async (tx, facultyProfileId, rows) => {
+    await tx.experience.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.experience.createMany({ data: rows.map((row) => ({ ...pick(row, ['title', 'organization', 'from', 'to']), facultyProfileId })) });
+  },
+  responsibilities: async (tx, facultyProfileId, rows) => {
+    await tx.responsibility.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.responsibility.createMany({ data: rows.map((row) => ({ ...pick(row, ['position', 'organization', 'from', 'to', 'type']), facultyProfileId })) });
+  },
+  publications: async (tx, facultyProfileId, rows) => {
+    await tx.publication.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.publication.createMany({ data: rows.map((row) => ({ ...pick(row, ['title', 'authors', 'venue', 'year', 'link']), facultyProfileId })) });
+  },
+  projects: async (tx, facultyProfileId, rows) => {
+    await tx.project.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.project.createMany({ data: rows.map((row) => ({ ...pick(row, ['title', 'fundingAgency', 'amount', 'duration', 'status']), facultyProfileId })) });
+  },
+  phdsGuided: async (tx, facultyProfileId, rows) => {
+    await tx.phDGuided.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.phDGuided.createMany({ data: rows.map((row) => ({ ...pick(row, ['studentName', 'thesisTitle', 'role', 'year']), facultyProfileId })) });
+  },
+  awards: async (tx, facultyProfileId, rows) => {
+    await tx.award.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.award.createMany({ data: rows.map((row) => ({ ...pick(row, ['title', 'awardedBy', 'year']), facultyProfileId })) });
+  },
+  patents: async (tx, facultyProfileId, rows) => {
+    await tx.patent.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.patent.createMany({ data: rows.map((row) => ({ ...pick(row, ['title', 'inventors', 'patentNumber', 'year', 'status']), facultyProfileId })) });
+  },
+  invitedTalks: async (tx, facultyProfileId, rows) => {
+    await tx.invitedTalk.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.invitedTalk.createMany({ data: rows.map((row) => ({ ...pick(row, ['topic', 'organization', 'date']), facultyProfileId })) });
+  },
+  memberships: async (tx, facultyProfileId, rows) => {
+    await tx.membership.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.membership.createMany({ data: rows.map((row) => ({ ...pick(row, ['type', 'organization', 'membershipNo']), facultyProfileId })) });
+  },
+  foreignVisits: async (tx, facultyProfileId, rows) => {
+    await tx.foreignVisit.deleteMany({ where: { facultyProfileId } });
+    if (rows.length > 0) await tx.foreignVisit.createMany({ data: rows.map((row) => ({ ...pick(row, ['country', 'duration', 'purpose']), facultyProfileId })) });
+  },
+};
+
+function pick(row: Record<string, any>, keys: string[]) {
+  return Object.fromEntries(Object.entries(row).filter(([key, value]) => keys.includes(key) && value !== undefined));
+}
+
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -96,6 +147,42 @@ export async function POST(req: Request) {
       facultyProfileId: profile.id,
       sections,
     };
+
+    if (session.user.role === 'HOD') {
+      const scalarData = Object.assign(
+        {},
+        identityData,
+        researchData,
+        opportunitiesData
+      );
+
+      await prisma.$transaction(async (tx) => {
+        for (const section of sections) {
+          const applyRelation = RELATION_APPLIERS[section.key];
+          if (applyRelation && Array.isArray(section.data)) {
+            await applyRelation(tx, profile.id, section.data);
+          }
+        }
+
+        await tx.facultyProfile.update({
+          where: { id: profile.id },
+          data: {
+            ...scalarData,
+            isPublic: true,
+          },
+        });
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          userId: user.id,
+          action: 'HOD_PROFILE_UPDATED',
+          details: `Updated ${sections.map((section) => section.label).join(', ')} directly for ${profile.name}`
+        }
+      });
+
+      return NextResponse.json({ success: true, appliedDirectly: true, changeRequest });
+    }
 
     const pendingChange = await prisma.pendingChange.create({
       data: {

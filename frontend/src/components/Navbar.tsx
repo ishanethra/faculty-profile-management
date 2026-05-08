@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
+import SignOutButton from "@/components/SignOutButton";
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -55,12 +56,11 @@ export default function Navbar() {
                   <p className="text-[10px] font-black text-white uppercase tracking-tight">{session.user.name}</p>
                   <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">{session.user.role}</p>
                 </div>
-                <Link
-                  href="/api/auth/signout"
+                <SignOutButton
                   className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
                 >
                   Sign Out
-                </Link>
+                </SignOutButton>
               </div>
             ) : (
               <div className="flex items-center gap-5">
