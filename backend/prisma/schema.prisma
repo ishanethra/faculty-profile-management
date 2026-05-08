@@ -46,7 +46,7 @@ model FacultyProfile {
   office           String?
   phone            String?
   profileImage     String?
-  researchTags     String       // Comma separated tags
+  researchTags     String       @db.Text // Comma separated tags
   
   scholarLink      String?
   linkedinLink     String?
@@ -214,7 +214,7 @@ model PendingChange {
   id               String         @id @default(cuid())
   facultyProfileId String
   facultyProfile   FacultyProfile @relation(fields: [facultyProfileId], references: [id], onDelete: Cascade)
-  changeData       String         // JSON string of the proposed changes
+  changeData       String         @db.LongText // JSON string of the proposed changes
   status           String         @default("PENDING")
   submittedAt      DateTime       @default(now())
   reviewedAt       DateTime?
@@ -226,6 +226,6 @@ model AuditLog {
   userId      String
   user        User     @relation("UserAuditLogs", fields: [userId], references: [id])
   action      String
-  details     String   
+  details     String   @db.LongText
   createdAt   DateTime @default(now())
 }
